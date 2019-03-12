@@ -9,6 +9,8 @@ Dim i As Integer, j As Integer, k As Integer
 Dim execTimeValue As Double
 Dim queryName As String, eSpaceName As String, moduleName As String
 
+'# v1.1: Added Slow Extensions and eSpace Names
+
 Application.DisplayAlerts = False
 
 Set wb = ActiveWorkbook
