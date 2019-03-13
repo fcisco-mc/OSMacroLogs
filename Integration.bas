@@ -4,10 +4,13 @@ Sub Integration()
 Dim wb As Workbook
 Dim myWorksheet As Worksheet, DataProcessSheet As Worksheet
 Dim RowHeaderRange As Range, durationHeader As Range, endPointHeader As Range, DataWrite As Range, actionHeader As Range, typeHeader As Range, sourceHeader As Range
-Dim instantHeader As Range, DataWriteInstant As Range, instantData As Range, durationData As Range, sourceData As Range, endpointData As Range, actionData As Range, typeData As Range
+Dim instantHeader As Range, DataWriteInstant As Range, instantData As Range, durationData As Range, sourceData As Range, endpointData As Range, actionData As Range, typeData As Range, nameHeader As Range
+Dim nameData As Range
 Dim i As Integer, j As Integer
 Dim execTimeValue As Double
 Dim queryName As String
+
+'# v1.1: Added Source, eSpaceName, Endpoint and Type to Filter Fields
 
 Application.DisplayAlerts = False
 
@@ -22,6 +25,7 @@ Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
 Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
 Set typeHeader = RowHeaderRange.Cells.Find("Type", Lookat:=xlWhole)
 Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
+Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
 
 On Error Resume Next
 Worksheets("IntegrationData").Delete
@@ -48,6 +52,9 @@ actionData.Value = "Action"
 
 Set typeData = DataProcessSheet.Range("F1")
 typeData.Value = "Type"
+
+Set nameData = DataProcessSheet.Range("G1")
+nameData.Value = "eSpace Name"
 
 
 myWorksheet.Activate
@@ -76,12 +83,16 @@ For Each cell In InstantColumn.Cells.SpecialCells(xlCellTypeVisible)
         'Type
         DataWrite.Offset(0, typeData.Column - instantData.Column).Value = cell.Offset(0, (typeHeader.Column - instantHeader.Column)).Value
         
+        'eSpace Name
+        DataWrite.Offset(0, nameData.Column - instantData.Column).Value = cell.Offset(0, (nameHeader.Column - instantHeader.Column)).Value
+        
         Set DataWrite = DataWrite.Offset(1, 0)
         
     End If
 Next cell
 
 DataProcessSheet.Columns.AutoFit
+DataProcessSheet.Visible = xlSheetHidden
 
 Call CreatePVTable
 
@@ -120,7 +131,7 @@ On Error GoTo General_ErrorHandler:
 'Creating Pivot Cache
 Set pc = ThisWorkbook.PivotCaches.Create( _
         SourceType:=xlDatabase, _
-        sourceData:=DataSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
+        sourceData:=ThisWorkbook.ActiveSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
         Version:=xlPivotTableVersion15)
 
 'Creating Pivot Table
@@ -133,17 +144,32 @@ Set pt = pc.CreatePivotTable( _
 Set ws = wb.ActiveSheet
     ws.Name = "PivotTable"
     
+'Row Fields
 Set pf = pt.PivotFields("Instant")
         pf.Orientation = xlRowField
         pf.Position = 1
 
+'Column Fields
 Set pf = pt.PivotFields("Action")
         pf.Orientation = xlColumnField
         pf.Position = 1
         
+'Filter Fields
 Set pf = pt.PivotFields("Type")
-        pf.Orientation = xlColumnField
+        pf.Orientation = xlPageField
+        pf.Position = 1
+
+Set pf = pt.PivotFields("eSpace Name")
+        pf.Orientation = xlPageField
         pf.Position = 2
+
+Set pf = pt.PivotFields("Source")
+        pf.Orientation = xlPageField
+        pf.Position = 3
+
+Set pf = pt.PivotFields("Endpoint")
+        pf.Orientation = xlPageField
+        pf.Position = 4
         
 'pt.AddDataField pt.PivotFields("Execution Time"), , xlSum
 pt.AddDataField pt.PivotFields("Duration"), , xlAverage
