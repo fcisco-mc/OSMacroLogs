@@ -10,6 +10,7 @@ Dim execTimeValue As Double
 Dim queryName As String, eSpaceName As String, moduleName As String
 
 '# v1.1: Added Slow Extensions and eSpace Names
+'# v1.2: Validated if the Maximum Number of log entries was exceeded
 
 Application.DisplayAlerts = False
 
@@ -23,9 +24,10 @@ Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
 Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
 Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
 Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
-
-'RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:="=*" & "SLOWSQL" & "*"
+    
+' Autofilter for SlowSql and SlowExtension
 RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:=Array("SLOWSQL", "SLOWEXTENSION"), Operator:=xlFilterValues
+
 
 On Error Resume Next
 Worksheets("SlowSQL").Delete
@@ -59,7 +61,8 @@ Set messageColumn = myWorksheet.Cells.Range(messageHeader, messageHeader.End(xlD
 Set DataWrite = DataProcessSheet.Range("B2")
 Set DataWriteInstant = DataProcessSheet.Range("A2")
 For Each cell In messageColumn.Cells.SpecialCells(xlCellTypeVisible)
-    If Not cell.Value = "Message" Then
+    ' Added a validation to see if the maximum number of log entries was exceeded. This message is also marked as slow and does not have the expected format
+    If Not (cell.Value = "Message" Or InStr(1, cell.Value, "The maximum number") > 0) Then
         'Debug.Print Cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value
         'Instant (Message column is the reference location)
         DataWriteInstant.Value = cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value
