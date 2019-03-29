@@ -1,5 +1,5 @@
 Attribute VB_Name = "SlowSql"
-Sub SlowSql()
+Sub SlowSql(SlowSql_cb As Boolean, SlowExtension_cb As Boolean)
 
 Dim wb As Workbook
 Dim myWorksheet As Worksheet, DataProcessSheet As Worksheet
@@ -11,6 +11,7 @@ Dim queryName As String, eSpaceName As String, moduleName As String
 
 '# v1.1: Added Slow Extensions and eSpace Names
 '# v1.2: Validated if the Maximum Number of log entries was exceeded
+'# v1.3: Added option to filter the logs for SlowSql, SlowExtension or both
 
 Application.DisplayAlerts = False
 
@@ -26,7 +27,13 @@ Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
 Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
     
 ' Autofilter for SlowSql and SlowExtension
-RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:=Array("SLOWSQL", "SLOWEXTENSION"), Operator:=xlFilterValues
+If SlowSql_cb = True And SlowExtension_cb = True Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:=Array("SLOWSQL", "SLOWEXTENSION"), Operator:=xlFilterValues
+ElseIf SlowSql_cb = True And SlowExtension_cb = False Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:="SLOWSQL", Operator:=xlFilterValues
+ElseIf SlowSql_cb = False And SlowExtension_cb = True Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:="SLOWEXTENSION", Operator:=xlFilterValues
+End If
 
 
 On Error Resume Next
@@ -96,7 +103,7 @@ Next cell
 DataProcessSheet.Columns.AutoFit
 DataProcessSheet.Visible = xlSheetHidden
 
-Call CreatePVTable
+Call CreatePVTable_SlowSQL
 
 Exit Sub
 
@@ -106,7 +113,7 @@ MsgBox Err.Description, vbCritical
 
 End Sub
 
-Private Sub CreatePVTable()
+Private Sub CreatePVTable_SlowSQL()
 
 Dim wb As Workbook
 Dim ws As Worksheet, DataSheet As Worksheet

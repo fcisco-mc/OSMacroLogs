@@ -1,12 +1,26 @@
 Attribute VB_Name = "AllMacros"
+'----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'                                                                           *** AllMacros ***
+' #v1.1:
+        ' Device UUID: # v2.1
+        ' Format Logs: # v3
+        ' Integration: # v1
+        ' SlowSQL: # v1.3
+'----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Sub CallUserForm()
     MacroForm.Show
 End Sub
 
 
-Public Sub DeviceUUID()
+'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'                                                                       *** Mobile Macro ***
+'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-'v2: fixed an infinite loop if the logs did not contain any log message with Device UUID
+Public Sub DeviceUUID(iOS_cb As Boolean, Android_cb As Boolean)
+
+' #v2: fixed an infinite loop if the logs did not contain any log message with Device UUID
+' #v2.1: Added option to filter the logs for iOS, Android or both
+
 Dim wb As Workbook
 Dim myWorksheet As Worksheet, DataProcessSheet As Worksheet
 Dim RowHeaderRange As Range, EnvInfHeader As Range, EnvInfColumn As Range, HeaderStart As Range, OSColumn As Range, RawDataRegion As Range
@@ -31,7 +45,15 @@ Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRi
 On Error GoTo EnvInf_ErrorHandler:
 Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", Lookat:=xlWhole)
 
-RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:="=*" & "DeviceUUID" & "*"
+' Filter for Mobile errors looking for DeviceUUID and/or iOS/Android
+If iOS_cb = True And Android_cb = True Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:="=*" & "DeviceUUID" & "*"
+ElseIf iOS_cb = False And Android_cb = True Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:=Array("=*" & "DeviceUUID" & "*", "=*" & "Android" & "*"), Operator:=xlAnd
+ElseIf iOS_cb = True And Android_cb = False Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:=Array("=*" & "DeviceUUID" & "*", "=*" & "iOS" & "*"), Operator:=xlAnd
+End If
+
 
 On Error Resume Next
 Worksheets("DeviceInformation").Delete
@@ -218,8 +240,10 @@ MsgBox Err.Description, vbCritical
 
 End Sub
 
-'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'                                                                       *** Format Logs ***
+'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Sub FormatErrorLogs()
 
@@ -311,9 +335,8 @@ Sub FormatErrorLogs()
     On Error GoTo ErrorHandler:
     
     'Applies filter to Headers'
-    Set RowHeaderRange = myWorksheet.Cells.Rows(1)
     If Not myWorksheet.AutoFilterMode Then
-        RowHeaderRange.AutoFilter
+        RowHeaderRange = myWorksheet.Cells.Rows(1)
     End If
     
     'Freezes Top Row'
@@ -335,6 +358,8 @@ InterruptExecution:
 End Sub
 
 
+'-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'                                                                       *** Integration Macro ***
 '-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Sub Integration()
@@ -533,9 +558,10 @@ End Sub
 
 
 '-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'                                                                       *** SLOWSQL ***
 '-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Sub SlowSql()
+Sub SlowSql(SlowSql_cb As Boolean, SlowExtension_cb As Boolean)
 
 Dim wb As Workbook
 Dim myWorksheet As Worksheet, DataProcessSheet As Worksheet
@@ -547,6 +573,7 @@ Dim queryName As String, eSpaceName As String, moduleName As String
 
 '# v1.1: Added Slow Extensions and eSpace Names
 '# v1.2: Validated if the Maximum Number of log entries was exceeded
+'# v1.3: Added option to filter the logs for SlowSql, SlowExtension or both
 
 Application.DisplayAlerts = False
 
@@ -562,7 +589,13 @@ Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
 Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
     
 ' Autofilter for SlowSql and SlowExtension
-RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:=Array("SLOWSQL", "SLOWEXTENSION"), Operator:=xlFilterValues
+If SlowSql_cb = True And SlowExtension_cb = True Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:=Array("SLOWSQL", "SLOWEXTENSION"), Operator:=xlFilterValues
+ElseIf SlowSql_cb = True And SlowExtension_cb = False Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:="SLOWSQL", Operator:=xlFilterValues
+ElseIf SlowSql_cb = False And SlowExtension_cb = True Then
+    RowHeaderRange.AutoFilter Field:=moduleNameHeader.Column, Criteria1:="SLOWEXTENSION", Operator:=xlFilterValues
+End If
 
 
 On Error Resume Next
@@ -632,7 +665,7 @@ Next cell
 DataProcessSheet.Columns.AutoFit
 DataProcessSheet.Visible = xlSheetHidden
 
-Call CreatePVTable_SlowSql
+Call CreatePVTable_SlowSQL
 
 Exit Sub
 
@@ -642,7 +675,7 @@ MsgBox Err.Description, vbCritical
 
 End Sub
 
-Private Sub CreatePVTable_SlowSql()
+Private Sub CreatePVTable_SlowSQL()
 
 Dim wb As Workbook
 Dim ws As Worksheet, DataSheet As Worksheet
@@ -723,6 +756,8 @@ Exit Sub
 
 General_ErrorHandler:
 MsgBox Err.Description, vbCritical
+
+
 
 End Sub
 

@@ -1,7 +1,9 @@
 Attribute VB_Name = "DeviceUUID"
-Public Sub DeviceUUID()
+Public Sub DeviceUUID(iOS_cb As Boolean, Android_cb As Boolean)
 
-'v2: fixed an infinite loop if the logs did not contain any log message with Device UUID
+' #v2: fixed an infinite loop if the logs did not contain any log message with Device UUID
+' #v2.1: Added option to filter the logs for iOS, Android or both
+
 Dim wb As Workbook
 Dim myWorksheet As Worksheet, DataProcessSheet As Worksheet
 Dim RowHeaderRange As Range, EnvInfHeader As Range, EnvInfColumn As Range, HeaderStart As Range, OSColumn As Range, RawDataRegion As Range
@@ -26,7 +28,15 @@ Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRi
 On Error GoTo EnvInf_ErrorHandler:
 Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", Lookat:=xlWhole)
 
-RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:="=*" & "DeviceUUID" & "*"
+' Filter for Mobile errors looking for DeviceUUID and/or iOS/Android
+If iOS_cb = True And Android_cb = True Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:="=*" & "DeviceUUID" & "*"
+ElseIf iOS_cb = False And Android_cb = True Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:=Array("=*" & "DeviceUUID" & "*", "=*" & "Android" & "*"), Operator:=xlAnd
+ElseIf iOS_cb = True And Android_cb = False Then
+    RowHeaderRange.AutoFilter Field:=EnvInfHeader.Column, Criteria1:=Array("=*" & "DeviceUUID" & "*", "=*" & "iOS" & "*"), Operator:=xlAnd
+End If
+
 
 On Error Resume Next
 Worksheets("DeviceInformation").Delete
@@ -122,7 +132,7 @@ Next cell
 
 DataProcessSheet.Columns.AutoFit
 
-Call CreatePVTable
+Call CreatePVTable_Mobile
 
 
 Exit Sub
@@ -137,7 +147,7 @@ End Sub
 
 
 
-Private Sub CreatePVTable()
+Private Sub CreatePVTable_Mobile()
 
 Dim wb As Workbook
 Dim ws As Worksheet, DataSheet As Worksheet

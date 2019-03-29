@@ -11,9 +11,9 @@ Sub FormatErrorLogs()
     '# One macro for all SC logs
     '# If Autofilter is already applied, then it's not removed
 
-    Dim RowHeaderRange As Range, NameHeader As Range, InstantHeader As Range, MessageHeader As Range, StackHeader As Range
-    Dim ModuleNameHeader As Range, RequestKeyHeader As Range, EspaceIdHeader As Range, ActionNameHeader As Range
-    Dim EndpointHeader As Range, ActionHeader As Range, DurationHeader As Range, ScreenHeader As Range
+    Dim RowHeaderRange As Range, nameHeader As Range, instantHeader As Range, messageHeader As Range, StackHeader As Range
+    Dim moduleNameHeader As Range, RequestKeyHeader As Range, EspaceIdHeader As Range, ActionNameHeader As Range
+    Dim endPointHeader As Range, actionHeader As Range, durationHeader As Range, ScreenHeader As Range
     Dim myWorksheet As Worksheet
     
     'Gets rid of annoying message whenever you close the Excel file'
@@ -38,45 +38,45 @@ Sub FormatErrorLogs()
     End If
         
     'Some logs have '_' characaters on the headers. The For Each loop replaces them with spaces
-    For Each Cell In RowHeaderRange.Cells
-        Cell.Value = Replace(Cell.Value, "_", " ")
-    Next Cell
+    For Each cell In RowHeaderRange.Cells
+        cell.Value = Replace(cell.Value, "_", " ")
+    Next cell
     
     'On error, it resumes next in case it does not find one or more of the headers below'
     On Error Resume Next
     'Finds Headers by exact match'
     'Common Headers
-    Set InstantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
-    InstantHeader.EntireColumn.ColumnWidth = 20
+    Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
+    instantHeader.EntireColumn.ColumnWidth = 20
     
     Set RequestKeyHeader = RowHeaderRange.Cells.Find("Request Key", Lookat:=xlWhole)
     RequestKeyHeader.EntireColumn.ColumnWidth = 35
     
-    Set NameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
-    NameHeader.EntireColumn.ColumnWidth = 20
+    Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+    nameHeader.EntireColumn.ColumnWidth = 20
     
     'Other Headers (General and Error mostly)
     Set ActionNameHeader = RowHeaderRange.Cells.Find("Action Name", Lookat:=xlWhole)
     ActionNameHeader.EntireColumn.ColumnWidth = 18
 
-    Set MessageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
-    MessageHeader.EntireColumn.ColumnWidth = 80
+    Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
+    messageHeader.EntireColumn.ColumnWidth = 80
     
     Set StackHeader = RowHeaderRange.Cells.Find("Stack", Lookat:=xlWhole)
     StackHeader.EntireColumn.ColumnWidth = 40
     
-    Set ModuleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
-    ModuleNameHeader.EntireColumn.ColumnWidth = 20
+    Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
+    moduleNameHeader.EntireColumn.ColumnWidth = 20
     
     'Integration Headers
-    Set EndpointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
-    EndpointHeader.EntireColumn.ColumnWidth = 90
+    Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
+    endPointHeader.EntireColumn.ColumnWidth = 90
     
-    Set ActionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
-    ActionHeader.EntireColumn.ColumnWidth = 90
+    Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
+    actionHeader.EntireColumn.ColumnWidth = 90
     
-    Set DurationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
-    DurationHeader.EntireColumn.ColumnWidth = 10
+    Set durationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
+    durationHeader.EntireColumn.ColumnWidth = 10
     
     'Screen and Mobile Headers
     Set ScreenHeader = RowHeaderRange.Cells.Find("Screen", Lookat:=xlWhole)
@@ -89,9 +89,8 @@ Sub FormatErrorLogs()
     On Error GoTo ErrorHandler:
     
     'Applies filter to Headers'
-    Set RowHeaderRange = myWorksheet.Cells.Rows(1)
     If Not myWorksheet.AutoFilterMode Then
-        RowHeaderRange.AutoFilter
+        RowHeaderRange = myWorksheet.Cells.Rows(1)
     End If
     
     'Freezes Top Row'
