@@ -1,5 +1,5 @@
-Attribute VB_Name = "FormaLogsMacro"
-Sub FormatErrorLogs()
+Attribute VB_Name = "FormatLogsMacro"
+Sub FormatLogs()
 
 'Version 2:
     '# Fix: headers with _ characters are replaced with blank spaces
@@ -10,6 +10,7 @@ Sub FormatErrorLogs()
     '# Fix an infinite loop when the headers are not on the first line
     '# One macro for all SC logs
     '# If Autofilter is already applied, then it's not removed
+'#V3.1: Adapted to Platform 11 headers
 
     Dim RowHeaderRange As Range, nameHeader As Range, instantHeader As Range, messageHeader As Range, StackHeader As Range
     Dim moduleNameHeader As Range, RequestKeyHeader As Range, EspaceIdHeader As Range, ActionNameHeader As Range
@@ -46,51 +47,54 @@ Sub FormatErrorLogs()
     On Error Resume Next
     'Finds Headers by exact match'
     'Common Headers
-    Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
+    Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
     instantHeader.EntireColumn.ColumnWidth = 20
     
-    Set RequestKeyHeader = RowHeaderRange.Cells.Find("Request Key", Lookat:=xlWhole)
+    Set RequestKeyHeader = RowHeaderRange.Cells.Find("Request Key", LookAt:=xlWhole, MatchCase:=False)
     RequestKeyHeader.EntireColumn.ColumnWidth = 35
     
-    Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+    Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole, MatchCase:=False)
+    If nameHeader Is Nothing Then
+        Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+    End If
     nameHeader.EntireColumn.ColumnWidth = 20
     
     'Other Headers (General and Error mostly)
-    Set ActionNameHeader = RowHeaderRange.Cells.Find("Action Name", Lookat:=xlWhole)
+    Set ActionNameHeader = RowHeaderRange.Cells.Find("Action Name", LookAt:=xlWhole, MatchCase:=False)
     ActionNameHeader.EntireColumn.ColumnWidth = 18
 
-    Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
+    Set messageHeader = RowHeaderRange.Cells.Find("Message", LookAt:=xlWhole, MatchCase:=False)
     messageHeader.EntireColumn.ColumnWidth = 80
     
-    Set StackHeader = RowHeaderRange.Cells.Find("Stack", Lookat:=xlWhole)
+    Set StackHeader = RowHeaderRange.Cells.Find("Stack", LookAt:=xlWhole, MatchCase:=False)
     StackHeader.EntireColumn.ColumnWidth = 40
     
-    Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
+    Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", LookAt:=xlWhole, MatchCase:=False)
     moduleNameHeader.EntireColumn.ColumnWidth = 20
     
     'Integration Headers
-    Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
+    Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", LookAt:=xlWhole, MatchCase:=False)
     endPointHeader.EntireColumn.ColumnWidth = 90
     
-    Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
+    Set actionHeader = RowHeaderRange.Cells.Find("Action", LookAt:=xlWhole, MatchCase:=False)
     actionHeader.EntireColumn.ColumnWidth = 90
     
-    Set durationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
+    Set durationHeader = RowHeaderRange.Cells.Find("Duration", LookAt:=xlWhole, MatchCase:=False)
     durationHeader.EntireColumn.ColumnWidth = 10
     
     'Screen and Mobile Headers
-    Set ScreenHeader = RowHeaderRange.Cells.Find("Screen", Lookat:=xlWhole)
+    Set ScreenHeader = RowHeaderRange.Cells.Find("Screen", LookAt:=xlWhole, MatchCase:=False)
     ScreenHeader.EntireColumn.ColumnWidth = 30
     
     'This find is just to reset the "Exact match" when CTRL+F
-    Random = RowHeaderRange.Cells.Find("", Lookat:=xlPart)
+    Random = RowHeaderRange.Cells.Find("", LookAt:=xlPart)
     
     'Error Handler 2 to avoid resuming next'
     On Error GoTo ErrorHandler:
     
     'Applies filter to Headers'
     If Not myWorksheet.AutoFilterMode Then
-        RowHeaderRange = myWorksheet.Cells.Rows(1)
+        myWorksheet.Cells.Rows(1).AutoFilter
     End If
     
     'Freezes Top Row'
@@ -110,6 +114,5 @@ InterruptExecution:
         Exit Sub
 
 End Sub
-
 
 
