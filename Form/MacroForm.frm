@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} MacroForm 
    Caption         =   "Please select the Macro to run"
-   ClientHeight    =   4905
+   ClientHeight    =   5865
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   8760
+   ClientWidth     =   8670
    OleObjectBlob   =   "MacroForm.frx":0000
    StartUpPosition =   3  'Windows Default
 End
@@ -14,13 +14,29 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Private Sub FormatLogs_Click()
-    Call AllMacros.FormatErrorLogs
+    Call AllMacros.FormatLogs
     Call UnloadForm
+End Sub
+
+Private Sub FormatLogs_Frame_Click()
+
 End Sub
 
 Private Sub Integration_Click()
     Call AllMacros.Integration
     Call UnloadForm
+End Sub
+
+Private Sub Label1_Click()
+
+End Sub
+
+Private Sub Label2_Click()
+
+End Sub
+
+Private Sub Label3_Click()
+
 End Sub
 
 Private Sub MobileErrors_Click()

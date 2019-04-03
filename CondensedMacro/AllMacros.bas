@@ -1,11 +1,12 @@
 Attribute VB_Name = "AllMacros"
+
 '----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 '                                                                           *** AllMacros ***
-' #v1.1:
+' #v1.2:
         ' Device UUID: # v2.1
-        ' Format Logs: # v3
-        ' Integration: # v1
-        ' SlowSQL: # v1.3
+        ' Format Logs: # v3.1
+        ' Integration: # v1.2
+        ' SlowSQL: # v1.4
 '----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Sub CallUserForm()
     MacroForm.Show
@@ -43,7 +44,7 @@ Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRi
 
 'Finds "Environment Information Header" and defines its column
 On Error GoTo EnvInf_ErrorHandler:
-Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", Lookat:=xlWhole)
+Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", LookAt:=xlWhole)
 
 ' Filter for Mobile errors looking for DeviceUUID and/or iOS/Android
 If iOS_cb = True And Android_cb = True Then
@@ -66,7 +67,7 @@ On Error GoTo General_ErrorHandler:
 'Defining the range of the environment information column
 myWorksheet.Activate
 
-RowHeaderRange.Cells.Find("Environment Information").Activate
+RowHeaderRange.Cells.Find("Environment Information", LookAt:=xlPart, MatchCase:=False).Activate
 Set EnvInfColumn = ActiveCell.EntireColumn.SpecialCells(xlCellTypeVisible)
 
 'Headers in the new sheet
@@ -87,7 +88,7 @@ For Each cell In EnvInfColumn.Cells.SpecialCells(xlCellTypeVisible)
     
     ' Replace line breaks with ; and "," with nothing: Some logs are formatted differently for some reason
         ' This guarantee the same format for all
-    If Not cell.Value = "Environment Information" Then
+    If Not LCase(cell.Value) = "environment information" Then
         cell.Value = Replace(cell.Text, vbLf, ";")
         'Debug.Print Cell.Value
         cell.Value = Replace(cell.Text, ",", "")
@@ -245,7 +246,7 @@ End Sub
 '                                                                       *** Format Logs ***
 '-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Sub FormatErrorLogs()
+Sub FormatLogs()
 
 'Version 2:
     '# Fix: headers with _ characters are replaced with blank spaces
@@ -256,6 +257,7 @@ Sub FormatErrorLogs()
     '# Fix an infinite loop when the headers are not on the first line
     '# One macro for all SC logs
     '# If Autofilter is already applied, then it's not removed
+'#V3.1: Adapted to Platform 11 headers
 
     Dim RowHeaderRange As Range, nameHeader As Range, instantHeader As Range, messageHeader As Range, StackHeader As Range
     Dim moduleNameHeader As Range, RequestKeyHeader As Range, EspaceIdHeader As Range, ActionNameHeader As Range
@@ -292,51 +294,54 @@ Sub FormatErrorLogs()
     On Error Resume Next
     'Finds Headers by exact match'
     'Common Headers
-    Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
+    Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
     instantHeader.EntireColumn.ColumnWidth = 20
     
-    Set RequestKeyHeader = RowHeaderRange.Cells.Find("Request Key", Lookat:=xlWhole)
+    Set RequestKeyHeader = RowHeaderRange.Cells.Find("Request Key", LookAt:=xlWhole, MatchCase:=False)
     RequestKeyHeader.EntireColumn.ColumnWidth = 35
     
-    Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+    Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole, MatchCase:=False)
+    If nameHeader Is Nothing Then
+        Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+    End If
     nameHeader.EntireColumn.ColumnWidth = 20
     
     'Other Headers (General and Error mostly)
-    Set ActionNameHeader = RowHeaderRange.Cells.Find("Action Name", Lookat:=xlWhole)
+    Set ActionNameHeader = RowHeaderRange.Cells.Find("Action Name", LookAt:=xlWhole, MatchCase:=False)
     ActionNameHeader.EntireColumn.ColumnWidth = 18
 
-    Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
+    Set messageHeader = RowHeaderRange.Cells.Find("Message", LookAt:=xlWhole, MatchCase:=False)
     messageHeader.EntireColumn.ColumnWidth = 80
     
-    Set StackHeader = RowHeaderRange.Cells.Find("Stack", Lookat:=xlWhole)
+    Set StackHeader = RowHeaderRange.Cells.Find("Stack", LookAt:=xlWhole, MatchCase:=False)
     StackHeader.EntireColumn.ColumnWidth = 40
     
-    Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
+    Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", LookAt:=xlWhole, MatchCase:=False)
     moduleNameHeader.EntireColumn.ColumnWidth = 20
     
     'Integration Headers
-    Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
+    Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", LookAt:=xlWhole, MatchCase:=False)
     endPointHeader.EntireColumn.ColumnWidth = 90
     
-    Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
+    Set actionHeader = RowHeaderRange.Cells.Find("Action", LookAt:=xlWhole, MatchCase:=False)
     actionHeader.EntireColumn.ColumnWidth = 90
     
-    Set durationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
+    Set durationHeader = RowHeaderRange.Cells.Find("Duration", LookAt:=xlWhole, MatchCase:=False)
     durationHeader.EntireColumn.ColumnWidth = 10
     
     'Screen and Mobile Headers
-    Set ScreenHeader = RowHeaderRange.Cells.Find("Screen", Lookat:=xlWhole)
+    Set ScreenHeader = RowHeaderRange.Cells.Find("Screen", LookAt:=xlWhole, MatchCase:=False)
     ScreenHeader.EntireColumn.ColumnWidth = 30
     
     'This find is just to reset the "Exact match" when CTRL+F
-    Random = RowHeaderRange.Cells.Find("", Lookat:=xlPart)
+    Random = RowHeaderRange.Cells.Find("", LookAt:=xlPart)
     
     'Error Handler 2 to avoid resuming next'
     On Error GoTo ErrorHandler:
     
     'Applies filter to Headers'
     If Not myWorksheet.AutoFilterMode Then
-        RowHeaderRange = myWorksheet.Cells.Rows(1)
+        myWorksheet.Cells.Rows(1).AutoFilter
     End If
     
     'Freezes Top Row'
@@ -374,21 +379,31 @@ Dim execTimeValue As Double
 Dim queryName As String
 
 '# v1.1: Added Source, eSpaceName, Endpoint and Type to Filter Fields
+'# v1.2: Adapted to Platform 11 headers
 
 Application.DisplayAlerts = False
+
+'This call is to guarantee header uniformization
+Call AllMacros.FormatLogs
 
 Set wb = ActiveWorkbook
 
 Set myWorksheet = ActiveWorkbook.ActiveSheet
 Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRight))
 
-Set durationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
-Set sourceHeader = RowHeaderRange.Cells.Find("Source", Lookat:=xlWhole)
-Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
-Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
-Set typeHeader = RowHeaderRange.Cells.Find("Type", Lookat:=xlWhole)
-Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
-Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+Set durationHeader = RowHeaderRange.Cells.Find("Duration")
+Set sourceHeader = RowHeaderRange.Cells.Find("Source", LookAt:=xlWhole, MatchCase:=False)
+Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", LookAt:=xlWhole, MatchCase:=False)
+Set actionHeader = RowHeaderRange.Cells.Find("Action", LookAt:=xlWhole, MatchCase:=False)
+Set typeHeader = RowHeaderRange.Cells.Find("Type", LookAt:=xlWhole, MatchCase:=False)
+Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
+
+'Validation added for Platform 11
+Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole, MatchCase:=False)
+If nameHeader Is Nothing Then
+    Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+End If
+
 
 On Error Resume Next
 Worksheets("IntegrationData").Delete
@@ -427,7 +442,7 @@ Set InstantColumn = myWorksheet.Cells.Range(instantHeader, instantHeader.End(xlD
 Set DataWrite = DataProcessSheet.Range("A2")
 
 For Each cell In InstantColumn.Cells.SpecialCells(xlCellTypeVisible)
-    If Not cell.Value = "Instant" Then
+    If Not LCase(cell.Value) = "instant" Then
         'Writting Instant
         DataWrite.Value = cell.Value
         
@@ -467,6 +482,7 @@ MsgBox Err.Description, vbCritical
 End Sub
 
 
+
 Private Sub CreatePVTable_Integration()
 
 Dim wb As Workbook
@@ -493,7 +509,7 @@ On Error GoTo General_ErrorHandler:
 'Creating Pivot Cache
 Set pc = ThisWorkbook.PivotCaches.Create( _
         SourceType:=xlDatabase, _
-        sourceData:=ThisWorkbook.ActiveSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
+        sourceData:=DataSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
         Version:=xlPivotTableVersion15)
 
 'Creating Pivot Table
@@ -554,6 +570,8 @@ Exit Sub
 General_ErrorHandler:
 MsgBox Err.Description, vbCritical
 
+
+
 End Sub
 
 
@@ -574,8 +592,12 @@ Dim queryName As String, eSpaceName As String, moduleName As String
 '# v1.1: Added Slow Extensions and eSpace Names
 '# v1.2: Validated if the Maximum Number of log entries was exceeded
 '# v1.3: Added option to filter the logs for SlowSql, SlowExtension or both
+'# v1.4: Adapted to Platform 11 headers;
 
 Application.DisplayAlerts = False
+
+'This call is to guarantee header uniformization
+Call AllMacros.FormatLogs
 
 Set wb = ActiveWorkbook
 
@@ -583,10 +605,14 @@ Set myWorksheet = ActiveWorkbook.ActiveSheet
 Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRight))
 
 'Finding headers and their locations
-Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
-Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
-Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
-Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+Set messageHeader = RowHeaderRange.Cells.Find("Message", LookAt:=xlWhole, MatchCase:=False)
+Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", LookAt:=xlWhole, MatchCase:=False)
+Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
+
+Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole)
+If nameHeader Is Nothing Then
+    Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+End If
     
 ' Autofilter for SlowSql and SlowExtension
 If SlowSql_cb = True And SlowExtension_cb = True Then
@@ -631,7 +657,7 @@ Set DataWrite = DataProcessSheet.Range("B2")
 Set DataWriteInstant = DataProcessSheet.Range("A2")
 For Each cell In messageColumn.Cells.SpecialCells(xlCellTypeVisible)
     ' Added a validation to see if the maximum number of log entries was exceeded. This message is also marked as slow and does not have the expected format
-    If Not (cell.Value = "Message" Or InStr(1, cell.Value, "The maximum number") > 0) Then
+    If Not (LCase(cell.Value) = "message" Or InStr(1, cell.Value, "The maximum number") > 0) Then
         'Debug.Print Cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value
         'Instant (Message column is the reference location)
         DataWriteInstant.Value = cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value

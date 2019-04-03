@@ -11,21 +11,31 @@ Dim execTimeValue As Double
 Dim queryName As String
 
 '# v1.1: Added Source, eSpaceName, Endpoint and Type to Filter Fields
+'# v1.2: Adapted to Platform 11 headers
 
 Application.DisplayAlerts = False
+
+'This call is to guarantee header uniformization
+Call AllMacros.FormatLogs
 
 Set wb = ActiveWorkbook
 
 Set myWorksheet = ActiveWorkbook.ActiveSheet
 Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRight))
 
-Set durationHeader = RowHeaderRange.Cells.Find("Duration", Lookat:=xlWhole)
-Set sourceHeader = RowHeaderRange.Cells.Find("Source", Lookat:=xlWhole)
-Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", Lookat:=xlWhole)
-Set actionHeader = RowHeaderRange.Cells.Find("Action", Lookat:=xlWhole)
-Set typeHeader = RowHeaderRange.Cells.Find("Type", Lookat:=xlWhole)
-Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
-Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+Set durationHeader = RowHeaderRange.Cells.Find("Duration")
+Set sourceHeader = RowHeaderRange.Cells.Find("Source", LookAt:=xlWhole, MatchCase:=False)
+Set endPointHeader = RowHeaderRange.Cells.Find("Endpoint", LookAt:=xlWhole, MatchCase:=False)
+Set actionHeader = RowHeaderRange.Cells.Find("Action", LookAt:=xlWhole, MatchCase:=False)
+Set typeHeader = RowHeaderRange.Cells.Find("Type", LookAt:=xlWhole, MatchCase:=False)
+Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
+
+'Validation added for Platform 11
+Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole, MatchCase:=False)
+If nameHeader Is Nothing Then
+    Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+End If
+
 
 On Error Resume Next
 Worksheets("IntegrationData").Delete
@@ -64,7 +74,7 @@ Set InstantColumn = myWorksheet.Cells.Range(instantHeader, instantHeader.End(xlD
 Set DataWrite = DataProcessSheet.Range("A2")
 
 For Each cell In InstantColumn.Cells.SpecialCells(xlCellTypeVisible)
-    If Not cell.Value = "Instant" Then
+    If Not LCase(cell.Value) = "instant" Then
         'Writting Instant
         DataWrite.Value = cell.Value
         
@@ -94,7 +104,7 @@ Next cell
 DataProcessSheet.Columns.AutoFit
 DataProcessSheet.Visible = xlSheetHidden
 
-Call CreatePVTable
+Call CreatePVTable_Integration
 
 Exit Sub
 
@@ -105,7 +115,7 @@ End Sub
 
 
 
-Private Sub CreatePVTable()
+Private Sub CreatePVTable_Integration()
 
 Dim wb As Workbook
 Dim ws As Worksheet, DataSheet As Worksheet
@@ -131,7 +141,7 @@ On Error GoTo General_ErrorHandler:
 'Creating Pivot Cache
 Set pc = ThisWorkbook.PivotCaches.Create( _
         SourceType:=xlDatabase, _
-        sourceData:=ThisWorkbook.ActiveSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
+        sourceData:=DataSheet.Name & "!" & DataSheet.Range("A1").CurrentRegion.Address, _
         Version:=xlPivotTableVersion15)
 
 'Creating Pivot Table
@@ -195,3 +205,4 @@ MsgBox Err.Description, vbCritical
 
 
 End Sub
+

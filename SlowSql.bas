@@ -12,8 +12,12 @@ Dim queryName As String, eSpaceName As String, moduleName As String
 '# v1.1: Added Slow Extensions and eSpace Names
 '# v1.2: Validated if the Maximum Number of log entries was exceeded
 '# v1.3: Added option to filter the logs for SlowSql, SlowExtension or both
+'# v1.4: Adapted to Platform 11 headers;
 
 Application.DisplayAlerts = False
+
+'This call is to guarantee header uniformization
+Call AllMacros.FormatLogs
 
 Set wb = ActiveWorkbook
 
@@ -21,10 +25,14 @@ Set myWorksheet = ActiveWorkbook.ActiveSheet
 Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRight))
 
 'Finding headers and their locations
-Set messageHeader = RowHeaderRange.Cells.Find("Message", Lookat:=xlWhole)
-Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", Lookat:=xlWhole)
-Set instantHeader = RowHeaderRange.Cells.Find("Instant", Lookat:=xlWhole)
-Set nameHeader = RowHeaderRange.Cells.Find("Name", Lookat:=xlWhole)
+Set messageHeader = RowHeaderRange.Cells.Find("Message", LookAt:=xlWhole, MatchCase:=False)
+Set moduleNameHeader = RowHeaderRange.Cells.Find("Module Name", LookAt:=xlWhole, MatchCase:=False)
+Set instantHeader = RowHeaderRange.Cells.Find("Instant", LookAt:=xlWhole, MatchCase:=False)
+
+Set nameHeader = RowHeaderRange.Cells.Find("Name", LookAt:=xlWhole)
+If nameHeader Is Nothing Then
+    Set nameHeader = RowHeaderRange.Cells.Find("Espace Name", LookAt:=xlWhole, MatchCase:=False)
+End If
     
 ' Autofilter for SlowSql and SlowExtension
 If SlowSql_cb = True And SlowExtension_cb = True Then
@@ -69,7 +77,7 @@ Set DataWrite = DataProcessSheet.Range("B2")
 Set DataWriteInstant = DataProcessSheet.Range("A2")
 For Each cell In messageColumn.Cells.SpecialCells(xlCellTypeVisible)
     ' Added a validation to see if the maximum number of log entries was exceeded. This message is also marked as slow and does not have the expected format
-    If Not (cell.Value = "Message" Or InStr(1, cell.Value, "The maximum number") > 0) Then
+    If Not (LCase(cell.Value) = "message" Or InStr(1, cell.Value, "The maximum number") > 0) Then
         'Debug.Print Cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value
         'Instant (Message column is the reference location)
         DataWriteInstant.Value = cell.Offset(0, -(messageColumn.Column - instantHeader.Column)).Value
@@ -198,3 +206,5 @@ MsgBox Err.Description, vbCritical
 
 
 End Sub
+
+
