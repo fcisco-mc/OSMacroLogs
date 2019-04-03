@@ -26,7 +26,7 @@ Set RowHeaderRange = myWorksheet.Cells.Range(Range("A1"), Range("A1").End(xlToRi
 
 'Finds "Environment Information Header" and defines its column
 On Error GoTo EnvInf_ErrorHandler:
-Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", Lookat:=xlWhole)
+Set EnvInfHeader = RowHeaderRange.Cells.Find("Environment Information", LookAt:=xlWhole)
 
 ' Filter for Mobile errors looking for DeviceUUID and/or iOS/Android
 If iOS_cb = True And Android_cb = True Then
@@ -49,7 +49,7 @@ On Error GoTo General_ErrorHandler:
 'Defining the range of the environment information column
 myWorksheet.Activate
 
-RowHeaderRange.Cells.Find("Environment Information").Activate
+RowHeaderRange.Cells.Find("Environment Information", LookAt:=xlPart, MatchCase:=False).Activate
 Set EnvInfColumn = ActiveCell.EntireColumn.SpecialCells(xlCellTypeVisible)
 
 'Headers in the new sheet
@@ -70,7 +70,7 @@ For Each cell In EnvInfColumn.Cells.SpecialCells(xlCellTypeVisible)
     
     ' Replace line breaks with ; and "," with nothing: Some logs are formatted differently for some reason
         ' This guarantee the same format for all
-    If Not cell.Value = "Environment Information" Then
+    If Not LCase(cell.Value) = "environment information" Then
         cell.Value = Replace(cell.Text, vbLf, ";")
         'Debug.Print Cell.Value
         cell.Value = Replace(cell.Text, ",", "")
@@ -222,3 +222,4 @@ MsgBox Err.Description, vbCritical
 
 
 End Sub
+
